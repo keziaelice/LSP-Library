@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct LoginView: View {
+    // Callback executed when login succeeds
     let onSuccess: () -> Void
     
     @State private var username: String = ""
@@ -42,7 +43,8 @@ struct LoginView: View {
         .padding(24)
         .frame(minWidth: 420, minHeight: 260)
     }
-
+    
+    // Performs admin authentication using Supabase RPC
     private func login() async {
         print("LOGIN STARTED")
         errorText = nil
@@ -57,11 +59,13 @@ struct LoginView: View {
         print("Password:", password)
 
         do {
+            // Data model for RPC result
             struct AdminRow: Decodable {
                 let id_admin: UUID
                 let username: String
             }
-
+            
+            // Call PostgreSQL function `admin_login`
             let client = SupabaseService.shared.client
             let rows: [AdminRow] = try await client
                 .rpc("admin_login", params: [

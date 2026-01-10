@@ -14,7 +14,8 @@ final class BorrowingsViewModel: BaseViewModel {
     func load() async {
         do {
             let client = SupabaseService.shared.client
-
+            
+            // Fetch data from SQL View
             let data: [BorrowingDisplay] = try await client
                 .from("view_borrowings_detail")
                 .select()
@@ -29,6 +30,7 @@ final class BorrowingsViewModel: BaseViewModel {
         }
     }
     
+    // Update borrowing status & book availability
     func markReturned(idBorrowing: UUID, idCollection: UUID) async {
         isLoading = true
         errorMessage = nil
@@ -68,6 +70,7 @@ final class BorrowingsViewModel: BaseViewModel {
         isLoading = false
     }
     
+    // Creates a new borrowing record
     func createBorrowing(
         borrowerName: String,
         collectionId: UUID
@@ -78,7 +81,8 @@ final class BorrowingsViewModel: BaseViewModel {
         }
 
         let client = SupabaseService.shared.client
-
+        
+        // Insert new borrowing into BORROWINGS table
         _ = try await client
             .from("BORROWINGS")
             .insert([
@@ -89,6 +93,7 @@ final class BorrowingsViewModel: BaseViewModel {
             ])
             .execute()
 
+        // Mark the selected book as unavailable
         _ = try await client
             .from("COLLECTIONS")
             .update(["available": false])
