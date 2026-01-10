@@ -8,32 +8,83 @@
 import SwiftUI
 
 struct ContentView: View {
-    enum Tab { case catalog, borrowings }
-
-    @State private var selectedTab: Tab = .catalog
+    enum Tab { case collections, borrowings }
+    
+    @State private var selectedTab: Tab? = .collections
     @State private var isAdminLoggedIn = false
-
+    
     var body: some View {
-        TabView(selection: $selectedTab) {
-            CollectionsView()
-                .tabItem { Label("Catalog", systemImage: "books.vertical") }
-                .tag(Tab.catalog)
-
-            borrowingsTab
-                .tabItem { Label("Borrowings", systemImage: "list.bullet.rectangle") }
-                .tag(Tab.borrowings)
+        NavigationSplitView {
+            List(selection: $selectedTab) {
+                NavigationLink(value: Tab.collections) {
+                    Label("Collections", systemImage: "books.vertical")
+                }
+                
+                NavigationLink(value: Tab.borrowings) {
+                    Label("Borrowings", systemImage: "list.bullet.rectangle")
+                }
+            }
+            .listStyle(.sidebar)
+            .navigationTitle("Menu")
+            
+            Divider()
+            
+            sidebarFooter
+            
+        } detail: {
+            if let tab = selectedTab {
+                switch tab {
+                case .collections:
+                    CollectionsView()
+                case .borrowings:
+                    if isAdminLoggedIn {
+                        BorrowingsView(onLogout: {
+                            isAdminLoggedIn = false
+                            selectedTab = .collections
+                        })
+                    } else {
+                        LoginView(onSuccess: {
+                            isAdminLoggedIn = true
+                            selectedTab = .borrowings
+                        })
+                    }
+                }
+            } else {
+                Text("Choose Menu")
+            }
         }
     }
-
+    
     @ViewBuilder
-    private var borrowingsTab: some View {
+    private var sidebarFooter: some View {
         if isAdminLoggedIn {
-            BorrowingsView(onLogout: { isAdminLoggedIn = false })
-        } else {
-            LoginView(onSuccess: { isAdminLoggedIn = true })
+            VStack(alignment: .leading, spacing: 10) {
+//                Divider()
+
+                HStack(spacing: 8) {
+                    Image(systemName: "person.crop.circle")
+                    Text(SupabaseService.shared.adminUsername ?? "Admin")
+                        .font(.body)
+                        .foregroundColor(.secondary)
+                }
+
+                Button {
+                    SupabaseService.shared.adminId = nil
+                    SupabaseService.shared.adminUsername = nil
+                    isAdminLoggedIn = false
+                    selectedTab = .collections
+                } label: {
+                    Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
+                }
+                .buttonStyle(.borderless)
+                .foregroundColor(.red)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 }
+
 
 #Preview {
     ContentView()

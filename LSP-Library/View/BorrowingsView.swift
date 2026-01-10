@@ -10,31 +10,31 @@ import SwiftUI
 struct BorrowingsView: View {
     @StateObject private var vm = BorrowingsViewModel()
     @State private var showNewBorrowing = false
-
+    
     @State private var searchText: String = ""
     @State private var statusFilter: StatusFilter = .all
     
     let onLogout: () -> Void
-
+    
     enum StatusFilter: String, CaseIterable, Identifiable {
         case all = "All"
         case borrowed = "Borrowed"
         case returned = "Returned"
         case late = "Late"
-
+        
         var id: String { rawValue }
     }
-
+    
     private var filteredRows: [BorrowingDisplay] {
         vm.rows.filter { row in
             let matchesSearch: Bool = {
                 if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return true }
                 let q = searchText.lowercased()
                 return row.borrower_name.lowercased().contains(q)
-                    || row.collection_title.lowercased().contains(q)
-                    || row.admin_name.lowercased().contains(q)
+                || row.collection_title.lowercased().contains(q)
+                || row.admin_name.lowercased().contains(q)
             }()
-
+            
             let matchesStatus: Bool = {
                 switch statusFilter {
                 case .all: return true
@@ -43,53 +43,62 @@ struct BorrowingsView: View {
                 case .late: return row.status.lowercased() == "late"
                 }
             }()
-
+            
             return matchesSearch && matchesStatus
         }
     }
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             header
-
+            
             controls
-
+            
             List(filteredRows) { row in
-                BorrowingRowCard(row: row)
-                    .listRowInsets(EdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8))
+                BorrowingRowCard(vm: vm, row: row)
+                    .padding(.vertical, 6)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 0, leading: 12, bottom: 0, trailing: 12))
+                    .listRowBackground(Color.clear)
             }
             .listStyle(.inset)
         }
         .padding()
         .task { await vm.load() }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    Task { await vm.load() }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .help("Refresh")
+            }
+        }
     }
-
+    
     private var header: some View {
         HStack {
             Text("Borrowings")
-                .font(.title)
-
+                .font(.title2).bold()
+            
             Spacer()
-
+            
             Button("New Borrowing") {
                 showNewBorrowing = true
-            }
-
-            Button("Refresh") {
-                Task { await vm.load() }
             }
         }
         .sheet(isPresented: $showNewBorrowing) {
             NewBorrowingSheet(vm: vm)
         }
     }
-
+    
     private var controls: some View {
         HStack(spacing: 12) {
             TextField("Search borrower / title / admin", text: $searchText)
                 .textFieldStyle(.roundedBorder)
                 .frame(maxWidth: 320)
-
+            
             Picker("Status", selection: $statusFilter) {
                 ForEach(StatusFilter.allCases) { f in
                     Text(f.rawValue).tag(f)
@@ -97,9 +106,9 @@ struct BorrowingsView: View {
             }
             .pickerStyle(.segmented)
             .frame(maxWidth: 420)
-
+            
             Spacer()
-
+            
             Text("\(filteredRows.count) result(s)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -108,73 +117,49 @@ struct BorrowingsView: View {
 }
 
 private struct BorrowingRowCard: View {
-    @StateObject private var vm = BorrowingsViewModel()
+    @ObservedObject var vm: BorrowingsViewModel
     let row: BorrowingDisplay
 
-    private var statusText: String { row.status.uppercased() }
-
-    private var statusBadge: some View {
-        Text(statusText)
-            .font(.caption2)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(.thinMaterial)
-            .clipShape(Capsule())
-    }
-
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .center, spacing: 16) {
             AsyncImage(url: URL(string: row.collection_cover_url)) { img in
                 img.resizable().scaledToFill()
             } placeholder: {
                 RoundedRectangle(cornerRadius: 8).fill(.quaternary)
             }
-            .frame(width: 44, height: 64)
+            .frame(width: 70, height: 100)
             .clipShape(RoundedRectangle(cornerRadius: 10))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(row.collection_title)
-                    .font(.headline)
-                    .lineLimit(1)
-
-                HStack(spacing: 8) {
-                    Text(row.collection_year)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Text("•")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Text("Admin: \(row.admin_name)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(row.collection_title)
+                        .font(.headline)
                         .lineLimit(1)
-                }
 
-                Text("Borrower: \(row.borrower_name)")
-                    .font(.subheadline)
+                    HStack(spacing: 4) {
+                        Text("Borrower: \(row.borrower_name)")
+                        Text("|")
+                        Text("Admin: \(row.admin_name)")
+                    }
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-                    .lineLimit(1)
-
+                }
                 HStack(spacing: 8) {
-                    Text("Borrow: \(row.borrow_date)")
-                    Text("Due: \(row.due_date)")
+                    dateCapsule(label: "BORROW", date: row.borrow_date)
+                    
+                    dateCapsule(label: "DUE", date: row.due_date)
+
                     if let ret = row.return_date, !ret.isEmpty {
-                        Text("Return: \(ret)")
+                        dateCapsule(label: "RETURNED", date: ret)
                     }
                 }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
+                .padding(.top, 4)
             }
 
             Spacer()
-
-            VStack {
-                statusBadge
-                
-                Button("Mark Returned") {
+            
+            if row.status.lowercased() != "returned" {
+                Button("Mark as Returned") {
                     Task {
                         await vm.markReturned(
                             idBorrowing: row.id_borrowings,
@@ -182,11 +167,34 @@ private struct BorrowingRowCard: View {
                         )
                     }
                 }
-                .disabled(vm.isLoading || row.status.lowercased() == "returned")
+                .buttonStyle(.borderedProminent)
+                .tint(.accentColor)
+                .controlSize(.regular)
+                .disabled(vm.isLoading)
             }
         }
-        .padding(10)
+        .padding(15)
         .background(.thinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+    
+    @ViewBuilder
+    private func dateCapsule(label: String, date: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
+
+            HStack(spacing: 6) {
+                Text(date)
+                    .font(.system(size: 11, weight: .medium))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.primary.opacity(0.08))
+            .clipShape(Capsule())
+        }
+        .fixedSize(horizontal: true, vertical: false)
     }
 }

@@ -66,7 +66,8 @@ final class BorrowingsViewModel: BaseViewModel {
             errorMessage = error.localizedDescription
             print("Mark returned error:", error)
         }
-
+        
+        await self.load()
         isLoading = false
     }
     

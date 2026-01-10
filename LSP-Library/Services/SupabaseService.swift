@@ -22,4 +22,9 @@ final class SupabaseService {
             supabaseKey: SupabaseConfig.anonKey
         )
     }
+    
+    func logout() {
+        adminId = nil
+        adminUsername = nil
+    }
 }

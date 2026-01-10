@@ -19,10 +19,6 @@ struct CollectionsView: View {
             HStack {
                 Text("Collections")
                     .font(.title2).bold()
-                Spacer()
-                Button("Refresh") {
-                    Task { await vm.load() }
-                }
             }
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 16) {
@@ -35,6 +31,16 @@ struct CollectionsView: View {
         }
         .padding()
         .task { await vm.load() }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    Task { await vm.load() }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                }
+                .help("Refresh")
+            }
+        }
     }
 }
 
@@ -42,7 +48,7 @@ private struct BookCard: View {
     let item: BookCollection
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 12) {
             AsyncImage(url: URL(string: item.cover_url)) { image in
                 image
                     .resizable()
@@ -56,31 +62,39 @@ private struct BookCard: View {
             }
             .frame(height: 190)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
 
-            Text(item.title)
-                .font(.headline)
-                .lineLimit(2)
-                .frame(height: 44, alignment: .top)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.title)
+                    .font(.headline)
+                    .lineLimit(2)
+                    .frame(height: 40, alignment: .topLeading)
 
-            HStack {
-                Text(item.year)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack {
+                    Text(item.year)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
 
-                Spacer()
+                    Spacer()
 
-                Text(item.available ? "Available" : "Unavailable")
-                    .font(.caption2)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(item.available ? Color.green.opacity(0.15) : Color.gray.opacity(0.15))
-                    .clipShape(Capsule())
+                    Text(item.available ? "Available" : "Unavailable")
+                        .font(.system(size: 9, weight: .bold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(item.available ? Color.green.opacity(0.15) : Color.secondary.opacity(0.15))
+                        .foregroundStyle(item.available ? .green : .secondary)
+                        .clipShape(Capsule())
+                }
             }
-            .frame(height: 5)
         }
-        .padding(10)
-        .background(.thinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .padding(12)
+        .background(Color.primary.opacity(0.03))
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 1)
+        )
     }
 }
 

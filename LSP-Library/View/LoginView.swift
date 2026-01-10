@@ -38,6 +38,10 @@ struct LoginView: View {
                 Task { await login() }
             }
             .keyboardShortcut(.defaultAction)
+            .disabled(
+                username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                password.isEmpty
+            )
 
         }
         .padding(24)
@@ -81,6 +85,11 @@ struct LoginView: View {
                 print("LOGIN SUCCESS:", admin.username)
                 SupabaseService.shared.adminId = admin.id_admin
                 SupabaseService.shared.adminUsername = admin.username
+                
+                username = ""
+                password = ""
+                errorText = nil
+                
                 onSuccess()
             } else {
                 errorText = "Invalid username or password."
