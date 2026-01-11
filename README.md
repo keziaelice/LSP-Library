@@ -1,7 +1,7 @@
 # 📚 LSP-Library
 
 LSP-Library is a macOS library management application built with **SwiftUI** and **Supabase**.  
-It allows an admin to manage book collections and track borrowing activities in real time.
+It enables administrators to manage book collections and track borrowing activities in real-time.
 
 This app was built as part of an LSP (Lembaga Sertifikasi Profesi) project to demonstrate database-driven application development, UI design, and backend integration.
 
@@ -36,7 +36,7 @@ This app focuses on **simple but reliable borrowing management**:
 Only books marked as `available = true` can be borrowed.
 
 ### Borrowings Management
-Admins can see all borrowing records including:
+Admins can see all borrowing records, including:
 
 - Book title & cover
 - Borrower name
@@ -45,15 +45,15 @@ Admins can see all borrowing records including:
 - Return date (if returned)
 - Status: `borrowed`, `returned`, or `late`
 
-The **late status** is calculated automatically based on the due date and current date.
+The **late status** is automatically calculated based on the due date and the current date.
 
 
 ### Create New Borrowing
 - Admin enters borrower name
 - Admin selects a book
 - Only **available books** appear in the list
-- Borrow date is set automatically
-- Due date is calculated automatically by the database
+- The borrow date is set automatically
+- The due date is calculated automatically by the database
 - The selected book is marked as unavailable
 
 
