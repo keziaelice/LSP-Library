@@ -200,7 +200,8 @@ private struct BorrowingRowCard: View {
         .fixedSize(horizontal: true, vertical: false)
     }
     
-    
+    // Renders a date capsule using any object that conforms to the Capsules protocol.
+    // This allows Borrow, Due, and Return capsules to share the same UI logic.
     @ViewBuilder
     private func dateCapsule(_ capsule: any Capsules) -> some View {
         VStack(alignment: .leading, spacing: 4) {

@@ -14,7 +14,8 @@ final class CollectionsViewModel: BaseViewModel {
     func load() async {
         do {
             let client = SupabaseService.shared.client
-
+            
+            // Fetch collections data from SQL Table
             let response: [BookCollection] = try await client
                 .from("COLLECTIONS")
                 .select()

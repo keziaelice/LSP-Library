@@ -15,7 +15,7 @@ final class BorrowingsViewModel: BaseViewModel {
         do {
             let client = SupabaseService.shared.client
             
-            // Fetch data from SQL View
+            // Fetch borrowings data from SQL View
             let data: [BorrowingDisplay] = try await client
                 .from("view_borrowings_detail")
                 .select()

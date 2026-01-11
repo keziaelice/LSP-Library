@@ -63,6 +63,8 @@ struct NewBorrowingSheet: View {
         .task { await loadCollections() }
     }
 
+    // Loads all available book collections from the database.
+    // This function only fetches books that are currently not borrowed (available = true) and sorts them alphabetically by title.
     private func loadCollections() async {
         isLoading = true
         errorText = nil
@@ -85,6 +87,8 @@ struct NewBorrowingSheet: View {
         isLoading = false
     }
 
+    // Saves a new borrowing record to the database.
+    // This function creates a new BORROWINGS row, marks the selected book as unavailable, and reloads the available books list
     private func save() async {
         guard let collectionId = selectedCollectionId else { return }
 

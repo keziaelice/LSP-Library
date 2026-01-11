@@ -8,6 +8,7 @@
 
 import Foundation
 
+// Protocol that defines the data contract for date capsules
 protocol Capsules {
     var label: String { get }
     var value: String { get }
