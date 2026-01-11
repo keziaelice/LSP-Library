@@ -59,8 +59,6 @@ struct ContentView: View {
     private var sidebarFooter: some View {
         if isAdminLoggedIn {
             VStack(alignment: .leading, spacing: 10) {
-//                Divider()
-
                 HStack(spacing: 8) {
                     Image(systemName: "person.crop.circle")
                     Text(SupabaseService.shared.adminUsername ?? "Admin")

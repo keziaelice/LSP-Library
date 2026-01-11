@@ -144,13 +144,15 @@ private struct BorrowingRowCard: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 }
-                HStack(spacing: 8) {
-                    dateCapsule(label: "BORROW", date: row.borrow_date)
-                    
-                    dateCapsule(label: "DUE", date: row.due_date)
+                
+                let capsules: [any Capsules] =
+                [BorrowCapsule(value: row.borrow_date),
+                 DueCapsule(value: row.due_date)]
+                + (row.return_date != nil ? [ReturnCapsule(value: row.return_date!)] : [])
 
-                    if let ret = row.return_date, !ret.isEmpty {
-                        dateCapsule(label: "RETURNED", date: ret)
+                HStack(spacing: 8) {
+                    ForEach(Array(capsules.enumerated()), id: \.offset) { _, capsule in
+                        dateCapsule(capsule)
                     }
                 }
                 .padding(.top, 4)
@@ -189,6 +191,28 @@ private struct BorrowingRowCard: View {
             HStack(spacing: 6) {
                 Text(date)
                     .font(.system(size: 11, weight: .medium))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(Color.primary.opacity(0.08))
+            .clipShape(Capsule())
+        }
+        .fixedSize(horizontal: true, vertical: false)
+    }
+    
+    
+    @ViewBuilder
+    private func dateCapsule(_ capsule: any Capsules) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(capsule.label)
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 4)
+
+            HStack(spacing: 6) {
+                Text(capsule.value)
+                    .font(.system(size: 11, weight: .medium))
+                    .lineLimit(1)
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
